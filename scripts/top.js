@@ -1,1 +1,2 @@
-let top = 1;//no of blogs
+//no of blogs
+let superTop = 2;

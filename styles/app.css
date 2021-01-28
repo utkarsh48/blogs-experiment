@@ -19,6 +19,7 @@ body{
 
 main{
   overflow: auto;
+  min-height: calc(100vh - 6rem);
 }
 
 a{
@@ -197,6 +198,29 @@ a{
 .blog td, th{
   padding: 0.5rem;
   border: 1px solid #999;
+}
+
+.error-parent{
+  text-align: center;
+  padding: 1rem;
+}
+
+.error-text{
+  color: #d24;
+  padding: 1rem;
+  font-weight: 600;
+  margin: 1rem auto;
+}
+
+.reload-all-articles{
+  color: #eee;
+  margin: 1rem auto;
+  padding: 0.5rem;
+  width: fit-content;
+  min-width: 80px;
+  border-radius: 8px;
+  background-color: var(--accent1);
+  background-image: var(--toRightGrad);
 }
 
 /***********nav bar**********/

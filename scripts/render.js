@@ -5,40 +5,74 @@ let converter = new showdown.Converter({
 });
 converter.setFlavor('github');
 
-//main
-async function getAllArticles(lowerLimit = 0, upperLimit = 1) {
+
+
+getAllArticles(0, superTop);
+
+
+
+
+
+
+
+
+//functions
+async function getAllArticles(lowerLimit, upperLimit) {
 	//clearing previous content
 	clearWrapper();
+
+	//parent element
 	let bulkParent = document.createElement("section");
 	bulkParent.classList.add("bulk-meta-data");
 
-	for (counter=lowerLimit; counter<upperLimit; counter++) {
-		let intermediateResult = await fetch(`/blogs/blog${counter}.json`, {
-			headers:{
-				'Content-Type': 'application/json'
-			}
-		});
+	//array
+	let bulkMap = new Map();
 
-		let result = await intermediateResult.json();
+	//2 loops need a workaround this
+	for (counter=lowerLimit; counter<upperLimit; counter++) {
+
+		bulkMap.set(counter,
+			new Promise((resolve, reject)=>{
+				fetch(`/blogs/blog${counter}.json`, {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(data=>data.json())
+				.then(result=>resolve(result))
+				.catch(er=>reject(er));
+			})
+		);
+
+	}
+
+	for(let blogIndex of bulkMap){
+		let count = blogIndex[0],
+		result = await blogIndex[1];
+
+		//validate json
+		if(!validateJsonObject(result)) break;
 
 		let tempElement = document.createElement("article");
 
 		tempElement.classList.add("bulk-blog");
-		tempElement.innerHTML=`<h1 class="bulk-blog-heading">${result.heading}</h1> <h2 class="bulk-blog-author">${result.author}</h2> <p class="bulk-blog-tags-parent">${[...result.tags.split(" ")].map(tag=>{
-			return `<span class="bulk-blog-tag">${tag}</span>`;
-		}).join("")}</p> <p class="bulk-blog-date">${result.date}</p>`;
+		tempElement.dataset["count"] = count;
+		tempElement.innerHTML=`<h1 class="bulk-blog-heading">${result.heading}</h1> <h2 class="bulk-blog-author">${result.author}</h2> <p class="bulk-blog-tags-parent">${tagsToSpans(result.tags, "bulk-blog-tag")}</p> <p class="bulk-blog-date">${result.date}</p>`;
+
+		tempElement.addEventListener("click", (e)=>{
+			let blogCount = e.currentTarget.dataset["count"];
+			getArticle(blogCount);
+		});
 
 		bulkParent.appendChild(tempElement);
-
-		counter++;
 	}
 
 	wrapper.appendChild(bulkParent);
-
 }
 
-async function getArticle(url = "/blogs/blog0") {
+async function getArticle(blogCount = 0) {
 	//clearing previous content
+	let url = `/blogs/blog${blogCount}`;
 	clearWrapper();
 
 	//fetching data to render
@@ -54,21 +88,27 @@ async function getArticle(url = "/blogs/blog0") {
 		}
 	});
 
+	//if not found
+	if(fetchedData.status==404 || fetchedMetaData.status==404){
+		errorOccured("404 Not Found");
+		return;
+	}
+
 	let metaData = await fetchedMetaData.json(),
 	data = await fetchedData.text(),
 	content = converter.makeHtml(data);
 
+	//validate json
+	if(!validateJsonObject(metaData)){
+		errorOccured("Can't verify signature");
+		return;
+	}
+
 	let blog = document.createElement("article");
 	blog.classList.add("blog");
-
-	//tags used in blog
-	let tagsParent = new Array();
-	metaData.tags.split(" ").forEach(tag=>{
-		tagsParent.push(`<span href="${tag}" class="blog-tag">${tag}</span>`);
-	});
 	
 	//rendering
-	blog.innerHTML = `<section class="blog-meta-data"> <h1 class="blog-heading">${metaData.heading}</h1>	<div class="blog-data"> <span class="blog-date">${metaData.date}</span> <span class="blog-author">${metaData.author}</span> </div> <section class="blog-tags">${tagsParent.join(" ")}</section> </section> ${content}`;
+	blog.innerHTML = `<section class="blog-meta-data"> <h1 class="blog-heading">${metaData.heading}</h1>	<div class="blog-data"> <span class="blog-date">${metaData.date}</span> <span class="blog-author">${metaData.author}</span> </div> <section class="blog-tags">${tagsToSpans(metaData.tags, "blog-tag")}</section> </section> ${content}`;
 
 	wrapper.appendChild(blog);
 
@@ -100,4 +140,31 @@ function clearWrapper() {
 	while(wrapper.hasChildNodes()){
 		wrapper.removeChild(wrapper.lastChild);
 	}
+}
+
+function validateJsonObject(object){
+	return object.heading!=null && object.author!=null && object.tags!=null && object.date!=null;
+}
+
+function tagsToSpans(tags, className0){
+	return [...tags.split(" ")].map(tag=>`<span class="${className0}">${tag}</span>`).join(" ");
+}
+
+function errorOccured(etext) {
+	let errorParent = document.createElement("article");
+	errorParent.classList.add("error-parent");
+	let errorText = document.createElement("div");
+	errorText.classList.add("error-text");
+	errorText.innerText=etext;
+	let reloadAllArticles = document.createElement("div");
+	reloadAllArticles.classList.add("reload-all-articles");
+	reloadAllArticles.innerText="All blogs";
+
+	reloadAllArticles.addEventListener("click", (e)=>{
+		getAllArticles(0, superTop);
+	});
+
+	errorParent.append(errorText, reloadAllArticles);
+	wrapper.appendChild(errorParent);
+
 }
