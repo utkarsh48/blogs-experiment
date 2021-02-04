@@ -1,12 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
 
 :root{
   --accent1: #8E2DE2;
   --accent2: #4A00E0;
   --toRightGrad: linear-gradient(90deg, var(--accent1), var(--accent2));
+  --toLeftGrad: linear-gradient(90deg, var(--accent2), var(--accent1));
 }
 
 body{
-  font-family: sans-serif;
+  font-family: 'Nunito', sans-serif;
   margin: 0;
   padding: 0;
   color: #333;
@@ -46,6 +48,11 @@ a{
   margin: 1rem;
   border-radius: 8px;
   overflow-x: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bulk-blog:hover{
+  transform: scale(1.01);
 }
 
 .bulk-blog > p{
@@ -226,6 +233,7 @@ a{
 /***********nav bar**********/
 nav{
   box-shadow: 0 2px 1rem 1px rgba(0,0,0,0.2);
+  background-color: #eee;
 }
 
 .desk-nav{
@@ -255,6 +263,9 @@ nav{
   color: #eee !important;
   background-color: var(--accent1);
   background-image: var(--toRightGrad);
+}
+.active-nav:hover{
+  background-image: var(--toLeftGrad);
 }
 
 .responsive-nav{
@@ -303,6 +314,13 @@ nav{
 
 .sidenav a:hover {
   color: #f1f1f1;
+}
+/************************Wrapper*****************************/
+.wrapper{
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  min-height: calc(100vh - 6rem);
+  grid-auto-rows: auto;
 }
 
 @media all and (max-width: 500px){

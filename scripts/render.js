@@ -1,4 +1,4 @@
-let wrapper = document.querySelector(".wrapper");
+let wrapper = document.querySelector(".blog-wrapper");
 //showdown + extensions initilization
 let converter = new showdown.Converter({
 	extensions: ['youtube']
@@ -29,7 +29,7 @@ async function getAllArticles(lowerLimit, upperLimit) {
 	let bulkMap = new Map();
 
 	//2 loops need a workaround this
-	for (counter=lowerLimit; counter<upperLimit; counter++) {
+	for (counter=upperLimit-1; counter>=lowerLimit; counter--) {
 
 		bulkMap.set(counter,
 			new Promise((resolve, reject)=>{
